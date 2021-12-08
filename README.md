@@ -1,14 +1,9 @@
-# Configurations
-Pre-tested Configurations for Marlin Firmware 2.0.9.2
+This is my custom firmware to convert the Anycubic Chiron to Direct Drive und swap the mainboard to a SKR V1.4 Turbo
 
-Marlin Firmware is configured using two files:
-
-- `Configuration.h` contains core configuration options like machine geometry.
-- `Configuration_adv.h` contains optional settings for advanced and low level features.
-
-For Graphical LCD these files may also be included:
-
-- `_Bootscreen.h` provides the bitmap for a custom Boot Screen.
-- `_Statusscreen.h` provides bitmaps to customize the Status Screen.
-
-See the [Configuration page](https://marlinfw.org/docs/configuration/configuration.html) for more information about configuration and individual configuration options.
+# Components used
+- SKR V1.4 Turbo with TMC2208 drivers
+- https://www.thingiverse.com/thing:4118411
+    - modified to work with E3D Volcano hotend
+    - Bondtech BMG Extruder mirrored
+    - BLTouch V3.1
+    - Radial Fan for part cooler
