@@ -703,7 +703,7 @@
 //#define INVERT_Z3_VS_Z_DIR
 //#define INVERT_Z4_VS_Z_DIR
 
-#define Z_MULTI_ENDSTOPS
+//#define Z_MULTI_ENDSTOPS
 #if ENABLED(Z_MULTI_ENDSTOPS)
 #define Z2_USE_ENDSTOP _E0DIAG_
 #define Z2_ENDSTOP_ADJUSTMENT 0
@@ -1436,7 +1436,7 @@
 #define POWER_LOSS_MIN_Z_CHANGE 0.05 // (mm) Minimum Z change before saving power-loss data
 
 // Enable if Z homing is needed for proper recovery. 99.9% of the time this should be disabled!
-#define POWER_LOSS_RECOVER_ZHOME
+//#define POWER_LOSS_RECOVER_ZHOME
 #if ENABLED(POWER_LOSS_RECOVER_ZHOME)
 #define POWER_LOSS_ZHOME_POS \
    {                         \
@@ -1922,7 +1922,7 @@
 
 //#define BABYSTEP_DISPLAY_TOTAL          // Display total babysteps since last G28
 
-//#define BABYSTEP_ZPROBE_OFFSET          // Combine M851 Z and Babystepping
+#define BABYSTEP_ZPROBE_OFFSET // Combine M851 Z and Babystepping
 #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
 //#define BABYSTEP_HOTEND_Z_OFFSET      // For multiple hotends, babystep relative Z offsets
 //#define BABYSTEP_ZPROBE_GFX_OVERLAY   // Enable graphical overlay on Z-offset editor
