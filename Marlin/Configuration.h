@@ -628,9 +628,9 @@
     114.00, 114.00      \
   }
 #else
-#define DEFAULT_Kp 22.20
-#define DEFAULT_Ki 1.08
-#define DEFAULT_Kd 114.00
+#define DEFAULT_Kp 37.56
+#define DEFAULT_Ki 3.68
+#define DEFAULT_Kd 95.82
 #endif
 #endif // PIDTEMP
 
@@ -669,9 +669,9 @@
 
 // 120V 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 // from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
-#define DEFAULT_bedKp 83.15
-#define DEFAULT_bedKi 11.78
-#define DEFAULT_bedKd 146.74
+#define DEFAULT_bedKp 63.40
+#define DEFAULT_bedKi 12.67
+#define DEFAULT_bedKd 211.55
 
 // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
 #endif // PIDTEMPBED
@@ -2689,8 +2689,6 @@
 #define LCD_SERIAL_PORT 3 // Default is 3 for Anycubic
 //#define ANYCUBIC_LCD_DEBUG
 #endif
-
-
 
 //
 // 320x240 Nextion 2.8" serial TFT Resistive Touch Screen NX3224T028
