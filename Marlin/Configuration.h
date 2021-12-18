@@ -2242,7 +2242,7 @@
 // Add individual axis homing items (Home X, Home Y, and Home Z) to the LCD menu.
 //
 //#define INDIVIDUAL_AXIS_HOMING_MENU
-#define INDIVIDUAL_AXIS_HOMING_SUBMENU
+//#define INDIVIDUAL_AXIS_HOMING_SUBMENU
 
 //
 // SPEAKER/BUZZER
@@ -2684,11 +2684,13 @@
 // Touch-screen LCD for Anycubic printers
 //
 //#define ANYCUBIC_LCD_I3MEGA
-//#define ANYCUBIC_LCD_CHIRON
+#define ANYCUBIC_LCD_CHIRON
 #if EITHER(ANYCUBIC_LCD_I3MEGA, ANYCUBIC_LCD_CHIRON)
 #define LCD_SERIAL_PORT 3 // Default is 3 for Anycubic
 //#define ANYCUBIC_LCD_DEBUG
 #endif
+
+
 
 //
 // 320x240 Nextion 2.8" serial TFT Resistive Touch Screen NX3224T028

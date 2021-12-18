@@ -27,6 +27,10 @@
 
 #define BOARD_INFO_NAME "BTT SKR V1.4 TURBO"
 
+#ifndef BEEPER_PIN
+#define BEEPER_PIN P1_30
+#endif
+
 //
 // Include SKR 1.4 pins
 //
