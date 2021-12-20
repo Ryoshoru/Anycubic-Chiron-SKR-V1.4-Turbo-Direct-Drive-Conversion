@@ -1945,9 +1945,9 @@
 
 #if ENABLED(NOZZLE_PARK_FEATURE)
 // Specify a park position as { X, Y, Z_raise }
-#define NOZZLE_PARK_POINT    \
-  {                          \
-    X_MIN_POS, Y_MAX_POS, 10 \
+#define NOZZLE_PARK_POINT              \
+  {                                    \
+    X_MIN_POS + 20, Y_MAX_POS - 20, 10 \
   }
 //#define NOZZLE_PARK_X_ONLY          // X move only is required to park
 //#define NOZZLE_PARK_Y_ONLY          // Y move only is required to park
