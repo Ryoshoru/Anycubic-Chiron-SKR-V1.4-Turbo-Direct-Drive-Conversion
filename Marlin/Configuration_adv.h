@@ -880,7 +880,7 @@
  * Z Steppers Auto-Alignment
  * Add the G34 command to align multiple Z steppers using a bed probe.
  */
-//#define Z_STEPPER_AUTO_ALIGN
+#define Z_STEPPER_AUTO_ALIGN
 #if ENABLED(Z_STEPPER_AUTO_ALIGN)
 // Define probe X and Y positions for Z1, Z2 [, Z3 [, Z4]]
 // If not defined, probe limits will be used.
@@ -907,7 +907,7 @@
    *               | 1   2 | 2   3 | 3   4 | 4   1 |
    */
 #ifndef Z_STEPPER_ALIGN_XY
-//#define Z_STEPPERS_ORIENTATION 0
+#define Z_STEPPERS_ORIENTATION 0
 #endif
 
 // Provide Z stepper positions for more rapid convergence in bed alignment.
@@ -928,10 +928,10 @@
 #endif
 
 // On a 300mm bed a 5% grade would give a misalignment of ~1.5cm
-#define G34_MAX_GRADE 5              // (%) Maximum incline that G34 will handle
-#define Z_STEPPER_ALIGN_ITERATIONS 5 // Number of iterations to apply during alignment
-#define Z_STEPPER_ALIGN_ACC 0.02     // Stop iterating early if the accuracy is better than this
-#define RESTORE_LEVELING_AFTER_G34   // Restore leveling after G34 is done?
+#define G34_MAX_GRADE 5               // (%) Maximum incline that G34 will handle
+#define Z_STEPPER_ALIGN_ITERATIONS 10 // Number of iterations to apply during alignment
+#define Z_STEPPER_ALIGN_ACC 0.02      // Stop iterating early if the accuracy is better than this
+#define RESTORE_LEVELING_AFTER_G34    // Restore leveling after G34 is done?
 // After G34, re-home Z (G28 Z) or just calculate it from the last probe heights?
 // Re-homing might be more precise in reproducing the actual 'G28 Z' homing height, especially on an uneven bed.
 #define HOME_AFTER_G34
@@ -940,7 +940,7 @@
 //
 // Add the G35 command to read bed corners to help adjust screws. Requires a bed probe.
 //
-//#define ASSISTED_TRAMMING
+#define ASSISTED_TRAMMING
 #if ENABLED(ASSISTED_TRAMMING)
 
 // Define positions for probe points.
@@ -2686,7 +2686,7 @@
 #define Z2_CURRENT 800
 #define Z2_CURRENT_HOME Z2_CURRENT
 #define Z2_MICROSTEPS Z_MICROSTEPS
-#define Z2_RSENSE 0.11
+#define Z2_RSENSE 0.062
 #define Z2_CHAIN_POS -1
 //#define Z2_INTERPOLATE true
 #endif
