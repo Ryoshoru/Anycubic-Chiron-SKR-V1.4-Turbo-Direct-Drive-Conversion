@@ -924,7 +924,7 @@
 #else
 // Amplification factor. Used to scale the correction step up or down in case
 // the stepper (spindle) position is farther out than the test point.
-#define Z_STEPPER_ALIGN_AMP 1.0 // Use a value > 1.0 NOTE: This may cause instability!
+#define Z_STEPPER_ALIGN_AMP 1.5 // Use a value > 1.0 NOTE: This may cause instability!
 #endif
 
 // On a 300mm bed a 5% grade would give a misalignment of ~1.5cm
@@ -1259,7 +1259,7 @@
 
 // Add Probe Z Offset calibration to the Z Probe Offsets menu
 #if HAS_BED_PROBE
-//#define PROBE_OFFSET_WIZARD
+#define PROBE_OFFSET_WIZARD
 #if ENABLED(PROBE_OFFSET_WIZARD)
 //
 // Enable to init the Probe Z-Offset when starting the Wizard.
