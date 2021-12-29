@@ -1488,7 +1488,7 @@
 //#define UTF_FILENAME_SUPPORT
 
 // This allows hosts to request long names for files and folders with M33
-//#define LONG_FILENAME_HOST_SUPPORT
+#define LONG_FILENAME_HOST_SUPPORT
 
 // Enable this option to scroll long filenames in the SD card menu
 //#define SCROLL_LONG_FILENAMES
@@ -1513,7 +1513,7 @@
 /**
    * Auto-report SdCard status with M27 S<seconds>
    */
-//#define AUTO_REPORT_SD_STATUS
+#define AUTO_REPORT_SD_STATUS
 
 /**
    * Support for USB thumb drives using an Arduino USB Host Shield or
@@ -1583,7 +1583,7 @@
    *
    * :[ 'LCD', 'ONBOARD', 'CUSTOM_CABLE' ]
    */
-//#define SDCARD_CONNECTION LCD
+#define SDCARD_CONNECTION ONBOARD
 
 // Enable if SD detect is rendered useless (e.g., by using an SD extender)
 //#define NO_SD_DETECT
@@ -1925,7 +1925,7 @@
 #define BABYSTEP_ZPROBE_OFFSET // Combine M851 Z and Babystepping
 #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
 //#define BABYSTEP_HOTEND_Z_OFFSET      // For multiple hotends, babystep relative Z offsets
-#define BABYSTEP_ZPROBE_GFX_OVERLAY // Enable graphical overlay on Z-offset editor
+//#define BABYSTEP_ZPROBE_GFX_OVERLAY // Enable graphical overlay on Z-offset editor
 #endif
 #endif
 
@@ -2292,7 +2292,7 @@
 #define SERIAL_OVERRUN_PROTECTION
 
 // For serial echo, the number of digits after the decimal point
-//#define SERIAL_FLOAT_PRECISION 4
+#define SERIAL_FLOAT_PRECISION 4
 
 // @section extras
 
@@ -3652,14 +3652,14 @@
 /**
  * Auto-report position with M154 S<seconds>
  */
-//#define AUTO_REPORT_POSITION
+#define AUTO_REPORT_POSITION
 
 /**
  * Include capabilities in M115 output
  */
 #define EXTENDED_CAPABILITIES_REPORT
 #if ENABLED(EXTENDED_CAPABILITIES_REPORT)
-//#define M115_GEOMETRY_REPORT
+#define M115_GEOMETRY_REPORT
 #endif
 
 /**
@@ -3707,11 +3707,11 @@
 //#define NO_WORKSPACE_OFFSETS
 
 // Extra options for the M114 "Current Position" report
-//#define M114_DETAIL         // Use 'M114` for details to check planner calculations
+#define M114_DETAIL // Use 'M114` for details to check planner calculations
 //#define M114_REALTIME       // Real current position based on forward kinematics
 //#define M114_LEGACY         // M114 used to synchronize on every call. Enable if needed.
 
-//#define REPORT_FAN_CHANGE   // Report the new fan speed when changed by M106 (and others)
+#define REPORT_FAN_CHANGE // Report the new fan speed when changed by M106 (and others)
 
 /**
  * Set the number of proportional font spaces required to fill up a typical character space.
