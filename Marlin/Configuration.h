@@ -628,9 +628,9 @@
     114.00, 114.00      \
   }
 #else
-#define DEFAULT_Kp 37.56
-#define DEFAULT_Ki 3.68
-#define DEFAULT_Kd 95.82
+#define DEFAULT_Kp 37.5155
+#define DEFAULT_Ki 3.5290
+#define DEFAULT_Kd 99.7022
 #endif
 #endif // PIDTEMP
 
@@ -669,9 +669,9 @@
 
 // 120V 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 // from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
-#define DEFAULT_bedKp 74.2910
-#define DEFAULT_bedKi 14.3975
-#define DEFAULT_bedKd 255.5609
+#define DEFAULT_bedKp 59.4638
+#define DEFAULT_bedKi 11.8856
+#define DEFAULT_bedKd 198.3315
 
 // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
 #endif // PIDTEMPBED
@@ -745,7 +745,7 @@
  * Note: For Bowden Extruders make this large enough to allow load/unload.
  */
 #define PREVENT_LENGTHY_EXTRUDE
-#define EXTRUDE_MAXLENGTH 200
+#define EXTRUDE_MAXLENGTH 500
 
 //===========================================================================
 //======================== Thermal Runaway Protection =======================
@@ -1226,7 +1226,7 @@
  */
 #define NOZZLE_TO_PROBE_OFFSET \
   {                            \
-    -1, 19, -0.7241            \
+    -1, 19, -0.66              \
   }
 
 // Most probes should stay away from the edges of the bed, but
@@ -1482,7 +1482,7 @@
  * RAMPS-based boards use SERVO3_PIN for the first runout sensor.
  * For other boards you may need to define FIL_RUNOUT_PIN, FIL_RUNOUT2_PIN, etc.
  */
-#define FILAMENT_RUNOUT_SENSOR
+//#define FILAMENT_RUNOUT_SENSOR
 #if ENABLED(FILAMENT_RUNOUT_SENSOR)
 #define FIL_RUNOUT_ENABLED_DEFAULT true // Enable the sensor on startup. Override with M412 followed by M500.
 #define NUM_RUNOUT_SENSORS 1            // Number of sensors, up to one per extruder. Define a FIL_RUNOUT#_PIN for each.
@@ -1633,8 +1633,8 @@
 #define LEVELED_SEGMENT_LENGTH 5.0 // (mm) Length of all segments (except the last one)
 
 /**
-   * Enable the G26 Mesh Validation Pattern tool.
-   */
+ * Enable the G26 Mesh Validation Pattern tool.
+ */
 #define G26_MESH_VALIDATION
 #if ENABLED(G26_MESH_VALIDATION)
 #define MESH_TEST_NOZZLE_SIZE 0.6  // (mm) Diameter of primary nozzle.
@@ -1742,22 +1742,22 @@
 #endif
 
 /**
-   * Corner Leveling Order
-   *
-   * Set 2 or 4 points. When 2 points are given, the 3rd is the center of the opposite edge.
-   *
-   *  LF  Left-Front    RF  Right-Front
-   *  LB  Left-Back     RB  Right-Back
-   *
-   * Examples:
-   *
-   *      Default        {LF,RB,LB,RF}         {LF,RF}           {LB,LF}
-   *  LB --------- RB   LB --------- RB    LB --------- RB   LB --------- RB
-   *  |  4       3  |   | 3         2 |    |     <3>     |   | 1           |
-   *  |             |   |             |    |             |   |          <3>|
-   *  |  1       2  |   | 1         4 |    | 1         2 |   | 2           |
-   *  LF --------- RF   LF --------- RF    LF --------- RF   LF --------- RF
-   */
+ * Corner Leveling Order
+ *
+ * Set 2 or 4 points. When 2 points are given, the 3rd is the center of the opposite edge.
+ *
+ *  LF  Left-Front    RF  Right-Front
+ *  LB  Left-Back     RB  Right-Back
+ *
+ * Examples:
+ *
+ *      Default        {LF,RB,LB,RF}         {LF,RF}           {LB,LF}
+ *  LB --------- RB   LB --------- RB    LB --------- RB   LB --------- RB
+ *  |  4       3  |   | 3         2 |    |     <3>     |   | 1           |
+ *  |             |   |             |    |             |   |          <3>|
+ *  |  1       2  |   | 1         4 |    | 1         2 |   | 2           |
+ *  LF --------- RF   LF --------- RF    LF --------- RF   LF --------- RF
+ */
 #define LEVEL_CORNERS_LEVELING_ORDER \
   {                                  \
     LF, RF, RB, LB                   \
