@@ -168,6 +168,8 @@
   #include "module/polargraph.h"
 #elif IS_SCARA
   #include "module/scara.h"
+#elif ENABLED(POLAR)
+  #include "module/polar.h"
 #endif
 
 #if HAS_LEVELING
@@ -232,7 +234,7 @@
   #include "feature/password/password.h"
 #endif
 
-#if ENABLED(DGUS_LCD_UI_MKS)
+#if DGUS_LCD_UI_MKS
   #include "lcd/extui/dgus/DGUSScreenHandler.h"
 #endif
 
@@ -347,7 +349,7 @@ void startOrResumeJob() {
     TERN_(GCODE_REPEAT_MARKERS, repeat.reset());
     TERN_(CANCEL_OBJECTS, cancelable.reset());
     TERN_(LCD_SHOW_E_TOTAL, e_move_accumulator = 0);
-    #if BOTH(LCD_SET_PROGRESS_MANUALLY, USE_M73_REMAINING_TIME)
+    #if ENABLED(SET_REMAINING_TIME)
       ui.reset_remaining_time();
     #endif
   }
@@ -446,7 +448,7 @@ inline void manage_inactivity(const bool no_stepper_sleep=false) {
           TERN_(DISABLE_INACTIVE_U, stepper.disable_axis(U_AXIS));
           TERN_(DISABLE_INACTIVE_V, stepper.disable_axis(V_AXIS));
           TERN_(DISABLE_INACTIVE_W, stepper.disable_axis(W_AXIS));
-          TERN_(DISABLE_INACTIVE_E, stepper.disable_e_steppers());
+          TERN_(DISABLE_INACTIVE_EXTRUDER, stepper.disable_e_steppers());
 
           TERN_(AUTO_BED_LEVELING_UBL, bedlevel.steppers_were_disabled());
         }
@@ -488,7 +490,7 @@ inline void manage_inactivity(const bool no_stepper_sleep=false) {
     }
   #endif
 
-  #if HAS_FREEZE_PIN
+  #if ENABLED(FREEZE_FEATURE)
     stepper.frozen = READ(FREEZE_PIN) == FREEZE_STATE;
   #endif
 
