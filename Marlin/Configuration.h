@@ -1222,7 +1222,7 @@
  */
 #define DEFAULT_AXIS_STEPS_PER_UNIT \
   {                                 \
-    640, 200, 3200, 6652.9774       \
+    80, 100, 400, 415       \
   }
 
 /**
@@ -1538,7 +1538,7 @@
  *     |    [-]    |
  *     O-- FRONT --+
  */
-#define NOZZLE_TO_PROBE_OFFSET { 31, 7, -2.95 }
+#define NOZZLE_TO_PROBE_OFFSET { 31, 7, -2.80 }
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.
