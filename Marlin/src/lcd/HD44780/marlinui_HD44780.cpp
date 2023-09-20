@@ -125,7 +125,7 @@ static void createChar_P(const char c, const byte * const ptr) {
 
 #if ENABLED(LCD_USE_I2C_BUZZER)
 
-  void MarlinUI::buzz(const long duration, const uint16_t freq) {
+  void MarlinUI::buzz(const long duration, const uint16_t freq/*=0*/) {
     if (sound_on) lcd.buzz(duration, freq);
   }
 
@@ -537,7 +537,7 @@ FORCE_INLINE void _draw_axis_value(const AxisEnum axis, const char *value, const
  */
 FORCE_INLINE void _draw_heater_status(const heater_id_t heater_id, const char prefix, const bool blink) {
   #if HAS_HEATED_BED
-    const bool isBed = heater_id == H_BED;
+    const bool isBed = TERN(HAS_HEATED_CHAMBER, heater_id == H_BED, heater_id < 0);
     const celsius_t t1 = (isBed ? thermalManager.wholeDegBed()  : thermalManager.wholeDegHotend(heater_id)),
                     t2 = (isBed ? thermalManager.degTargetBed() : thermalManager.degTargetHotend(heater_id));
   #else
@@ -546,17 +546,7 @@ FORCE_INLINE void _draw_heater_status(const heater_id_t heater_id, const char pr
 
   if (prefix >= 0) lcd_put_lchar(prefix);
 
-  if (t1 >= 0)
-    lcd_put_u8str(ui16tostr3rj(t1));
-  else {
-    #if ENABLED(SHOW_TEMPERATURE_BELOW_ZERO)
-      char * const str = i16tostr3rj(t1);
-      lcd_put_u8str(&str[1]);
-    #else
-      lcd_put_u8str(F("err"));
-    #endif
-  }
-
+  lcd_put_u8str(t1 < 0 ? "err" : i16tostr3rj(t1));
   lcd_put_u8str(F("/"));
 
   #if !HEATER_IDLE_HANDLER

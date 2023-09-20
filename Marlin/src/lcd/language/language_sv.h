@@ -262,7 +262,7 @@ namespace Language_sv {
   LSTR MSG_MOVE_001IN                     = _UxGT("Flytta 0.01tum");
   LSTR MSG_MOVE_01IN                      = _UxGT("Flytta 0.1tum");
   LSTR MSG_SPEED                          = _UxGT("Hastighet");
-  LSTR MSG_MESH_Z_OFFSET                  = _UxGT("Bädd Z");
+  LSTR MSG_BED_Z                          = _UxGT("Bädd Z");
   LSTR MSG_NOZZLE                         = _UxGT("Munstycke");
   LSTR MSG_NOZZLE_N                       = _UxGT("Munstycke ~");
   LSTR MSG_NOZZLE_PARKED                  = _UxGT("Munstycke Parkerad");
@@ -291,7 +291,7 @@ namespace Language_sv {
   LSTR MSG_PID_AUTOTUNE                   = _UxGT("PID Autojustera");
   LSTR MSG_PID_AUTOTUNE_E                 = _UxGT("PID Autojustera *");
   LSTR MSG_PID_AUTOTUNE_DONE              = _UxGT("PID tuning done");
-  LSTR MSG_PID_BAD_HEATER_ID              = _UxGT("Autojustera misslyckad! Dålig extruder.");
+  LSTR MSG_PID_BAD_EXTRUDER_NUM           = _UxGT("Autojustera misslyckad! Dålig extruder.");
   LSTR MSG_PID_TEMP_TOO_HIGH              = _UxGT("Autojustera misslyckad! Temperatur för hög.");
   LSTR MSG_PID_TIMEOUT                    = _UxGT("Autojustera misslyckad! Tidsgräns.");
   LSTR MSG_SELECT_E                       = _UxGT("Välj *");
@@ -348,7 +348,7 @@ namespace Language_sv {
   LSTR MSG_RESTORE_DEFAULTS               = _UxGT("Återställ Standard");
   LSTR MSG_INIT_EEPROM                    = _UxGT("Initiera EEPROM");
   LSTR MSG_ERR_EEPROM_CRC                 = _UxGT("EEPROM CRC Fel");
-  LSTR MSG_ERR_EEPROM_INDEX               = _UxGT("EEPROM Index Fel");
+  LSTR MSG_ERR_EEPROM_SIZE                = _UxGT("EEPROM Storlek Fel");
   LSTR MSG_ERR_EEPROM_VERSION             = _UxGT("EEPROM Version Fel");
   LSTR MSG_SETTINGS_STORED                = _UxGT("Inställningar Lagrad");
   LSTR MSG_MEDIA_UPDATE                   = _UxGT("Media Uppdatera");

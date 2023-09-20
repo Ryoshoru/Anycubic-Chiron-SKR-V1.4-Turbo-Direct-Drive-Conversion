@@ -36,12 +36,13 @@
  */
 
 // Change EEPROM version if the structure changes
-#define EEPROM_VERSION "V87"
+#define EEPROM_VERSION "V88"
 #define EEPROM_OFFSET 100
 
 // Check the integrity of data offsets.
 // Can be disabled for production build.
 //#define DEBUG_EEPROM_READWRITE
+//#define DEBUG_EEPROM_OBSERVE
 
 #include "settings.h"
 
@@ -166,7 +167,7 @@
   #include "../feature/fancheck.h"
 #endif
 
-#if DGUS_LCD_UI_MKS
+#if ENABLED(DGUS_LCD_UI_MKS)
   #include "../lcd/extui/dgus/DGUSScreenHandler.h"
   #include "../lcd/extui/dgus/DGUSDisplayDef.h"
 #endif
@@ -207,7 +208,8 @@ typedef struct SettingsDataStruct {
   #if ENABLED(EEPROM_INIT_NOW)
     uint32_t build_hash;                                // Unique build hash
   #endif
-  uint16_t  crc;                                        // Data Checksum
+  uint16_t  crc;                                        // Data Checksum for validation
+  uint16_t  data_size;                                  // Data Size for validation
 
   //
   // DISTINCT_E_FACTORS
@@ -246,18 +248,11 @@ typedef struct SettingsDataStruct {
   float planner_z_fade_height;                          // M420 Zn  planner.z_fade_height
 
   //
-  // AUTOTEMP
-  //
-  #if ENABLED(AUTOTEMP)
-    celsius_t planner_autotemp_max, planner_autotemp_min;
-    float planner_autotemp_factor;
-  #endif
-
-  //
   // MESH_BED_LEVELING
   //
   float mbl_z_offset;                                   // bedlevel.z_offset
   uint8_t mesh_num_x, mesh_num_y;                       // GRID_MAX_POINTS_X, GRID_MAX_POINTS_Y
+  uint16_t mesh_check;                                  // Hash to check against X/Y
   float mbl_z_values[TERN(MESH_BED_LEVELING, GRID_MAX_POINTS_X, 3)]   // bedlevel.z_values
                     [TERN(MESH_BED_LEVELING, GRID_MAX_POINTS_Y, 3)];
 
@@ -276,6 +271,7 @@ typedef struct SettingsDataStruct {
   // AUTO_BED_LEVELING_BILINEAR
   //
   uint8_t grid_max_x, grid_max_y;                       // GRID_MAX_POINTS_X, GRID_MAX_POINTS_Y
+  uint16_t grid_check;                                  // Hash to check against X/Y
   xy_pos_t bilinear_grid_spacing, bilinear_start;       // G29 L F
   #if ENABLED(AUTO_BED_LEVELING_BILINEAR)
     bed_mesh_t z_values;                                // G29
@@ -480,9 +476,7 @@ typedef struct SettingsDataStruct {
   //
   // SKEW_CORRECTION
   //
-  #if ENABLED(SKEW_CORRECTION)
-    skew_factor_t planner_skew_factor;                  // M852 I J K
-  #endif
+  skew_factor_t planner_skew_factor;                    // M852 I J K
 
   //
   // ADVANCED_PAUSE_FEATURE
@@ -569,7 +563,7 @@ typedef struct SettingsDataStruct {
   //
   // MKS UI controller
   //
-  #if DGUS_LCD_UI_MKS
+  #if ENABLED(DGUS_LCD_UI_MKS)
     MKS_Language mks_language_index;                    // Display Language
     xy_int_t mks_corner_offsets[5];                     // Bed Tramming
     xyz_int_t mks_park_pos;                             // Custom Parking (without NOZZLE_PARK)
@@ -726,16 +720,27 @@ void MarlinSettings::postprocess() {
 
 #if ENABLED(EEPROM_SETTINGS)
 
-  #define EEPROM_ASSERT(TST,ERR)  do{ if (!(TST)) { SERIAL_ERROR_MSG(ERR); eeprom_error = true; } }while(0)
+  #define EEPROM_ASSERT(TST,ERR)  do{ if (!(TST)) { SERIAL_ERROR_MSG(ERR); eeprom_error = ERR_EEPROM_SIZE; } }while(0)
+
+  #define TWO_BYTE_HASH(A,B) uint16_t((uint16_t(A ^ 0xC3) << 4) ^ (uint16_t(B ^ 0xC3) << 12))
 
   #if ENABLED(DEBUG_EEPROM_READWRITE)
     #define _FIELD_TEST(FIELD) \
+      SERIAL_ECHOLNPGM("Field: " STRINGIFY(FIELD)); \
       EEPROM_ASSERT( \
         eeprom_error || eeprom_index == offsetof(SettingsData, FIELD) + EEPROM_OFFSET, \
         "Field " STRINGIFY(FIELD) " mismatch." \
       )
   #else
     #define _FIELD_TEST(FIELD) NOOP
+  #endif
+
+  #if ENABLED(DEBUG_EEPROM_OBSERVE)
+    #define EEPROM_READ(V...)        do{ SERIAL_ECHOLNPGM("READ: ", F(STRINGIFY(FIRST(V)))); EEPROM_READ_(V); }while(0)
+    #define EEPROM_READ_ALWAYS(V...) do{ SERIAL_ECHOLNPGM("READ: ", F(STRINGIFY(FIRST(V)))); EEPROM_READ_ALWAYS_(V); }while(0)
+  #else
+    #define EEPROM_READ(V...)        EEPROM_READ_(V)
+    #define EEPROM_READ_ALWAYS(V...) EEPROM_READ_ALWAYS_(V)
   #endif
 
   const char version[4] = EEPROM_VERSION;
@@ -747,20 +752,20 @@ void MarlinSettings::postprocess() {
     constexpr uint32_t build_hash = strhash32(__DATE__ __TIME__);
   #endif
 
-  bool MarlinSettings::eeprom_error, MarlinSettings::validating;
+  bool MarlinSettings::validating;
   int MarlinSettings::eeprom_index;
   uint16_t MarlinSettings::working_crc;
 
-  bool MarlinSettings::size_error(const uint16_t size) {
+  EEPROM_Error MarlinSettings::size_error(const uint16_t size) {
     if (size != datasize()) {
       DEBUG_ERROR_MSG("EEPROM datasize error."
         #if ENABLED(MARLIN_DEV_MODE)
           " (Actual:", size, " Expected:", datasize(), ")"
         #endif
       );
-      return true;
+      return ERR_EEPROM_SIZE;
     }
-    return false;
+    return ERR_EEPROM_NOERR;
   }
 
   /**
@@ -772,18 +777,25 @@ void MarlinSettings::postprocess() {
 
     if (!EEPROM_START(EEPROM_OFFSET)) return false;
 
-    eeprom_error = false;
+    EEPROM_Error eeprom_error = ERR_EEPROM_NOERR;
 
     // Write or Skip version. (Flash doesn't allow rewrite without erase.)
     TERN(FLASH_EEPROM_EMULATION, EEPROM_SKIP, EEPROM_WRITE)(ver);
 
     #if ENABLED(EEPROM_INIT_NOW)
-      EEPROM_SKIP(build_hash);  // Skip the hash slot
+      EEPROM_SKIP(build_hash);  // Skip the hash slot which will be written later
     #endif
 
     EEPROM_SKIP(working_crc);   // Skip the checksum slot
 
-    working_crc = 0; // clear before first "real data"
+    //
+    // Clear after skipping CRC and before writing the CRC'ed data
+    //
+    working_crc = 0;
+
+    // Write the size of the data structure for use in validation
+    const uint16_t data_size = datasize();
+    EEPROM_WRITE(data_size);
 
     const uint8_t e_factors = DISTINCT_AXES - (NUM_AXES);
     _FIELD_TEST(e_factors);
@@ -866,16 +878,6 @@ void MarlinSettings::postprocess() {
     }
 
     //
-    // AUTOTEMP
-    //
-    #if ENABLED(AUTOTEMP)
-      _FIELD_TEST(planner_autotemp_max);
-      EEPROM_WRITE(planner.autotemp.max);
-      EEPROM_WRITE(planner.autotemp.min);
-      EEPROM_WRITE(planner.autotemp.factor);
-    #endif
-
-    //
     // Mesh Bed Leveling
     //
     {
@@ -894,6 +896,10 @@ void MarlinSettings::postprocess() {
       EEPROM_WRITE(TERN(MESH_BED_LEVELING, bedlevel.z_offset, dummyf));
       EEPROM_WRITE(mesh_num_x);
       EEPROM_WRITE(mesh_num_y);
+
+      // Check value for the X/Y values
+      const uint16_t mesh_check = TWO_BYTE_HASH(mesh_num_x, mesh_num_y);
+      EEPROM_WRITE(mesh_check);
 
       #if ENABLED(MESH_BED_LEVELING)
         EEPROM_WRITE(bedlevel.z_values);
@@ -942,6 +948,11 @@ void MarlinSettings::postprocess() {
                     grid_max_y = TERN(AUTO_BED_LEVELING_BILINEAR, GRID_MAX_POINTS_Y, 3);
       EEPROM_WRITE(grid_max_x);
       EEPROM_WRITE(grid_max_y);
+
+      // Check value for the X/Y values
+      const uint16_t grid_check = TWO_BYTE_HASH(grid_max_x, grid_max_y);
+      EEPROM_WRITE(grid_check);
+
       #if ENABLED(AUTO_BED_LEVELING_BILINEAR)
         EEPROM_WRITE(bedlevel.grid_spacing);
         EEPROM_WRITE(bedlevel.grid_start);
@@ -1473,10 +1484,8 @@ void MarlinSettings::postprocess() {
     //
     // Skew correction factors
     //
-    #if ENABLED(SKEW_CORRECTION)
-      _FIELD_TEST(planner_skew_factor);
-      EEPROM_WRITE(planner.skew_factor);
-    #endif
+    _FIELD_TEST(planner_skew_factor);
+    EEPROM_WRITE(planner.skew_factor);
 
     //
     // Advanced Pause filament load & unload lengths
@@ -1614,7 +1623,7 @@ void MarlinSettings::postprocess() {
     //
     // MKS UI controller
     //
-    #if DGUS_LCD_UI_MKS
+    #if ENABLED(DGUS_LCD_UI_MKS)
       EEPROM_WRITE(mks_language_index);
       EEPROM_WRITE(mks_corner_offsets);
       EEPROM_WRITE(mks_park_pos);
@@ -1632,7 +1641,8 @@ void MarlinSettings::postprocess() {
     // Model predictive control
     //
     #if ENABLED(MPCTEMP)
-      HOTEND_LOOP() EEPROM_WRITE(thermalManager.temp_hotend[e].mpc);
+      HOTEND_LOOP()
+        EEPROM_WRITE(thermalManager.temp_hotend[e].constants);
     #endif
 
     //
@@ -1652,7 +1662,7 @@ void MarlinSettings::postprocess() {
     //
     // Report final CRC and Data Size
     //
-    if (!eeprom_error) {
+    if (eeprom_error == ERR_EEPROM_NOERR) {
       const uint16_t eeprom_size = eeprom_index - (EEPROM_OFFSET),
                      final_crc = working_crc;
 
@@ -1668,7 +1678,7 @@ void MarlinSettings::postprocess() {
       // Report storage size
       DEBUG_ECHO_MSG("Settings Stored (", eeprom_size, " bytes; crc ", (uint32_t)final_crc, ")");
 
-      eeprom_error |= size_error(eeprom_size);
+      eeprom_error = size_error(eeprom_size);
     }
     EEPROM_FINISH();
 
@@ -1680,56 +1690,82 @@ void MarlinSettings::postprocess() {
         store_mesh(bedlevel.storage_slot);
     #endif
 
-    if (!eeprom_error) {
+    const bool success = (eeprom_error == ERR_EEPROM_NOERR);
+    if (success) {
       LCD_MESSAGE(MSG_SETTINGS_STORED);
       TERN_(HOST_PROMPT_SUPPORT, hostui.notify(GET_TEXT_F(MSG_SETTINGS_STORED)));
     }
 
-    TERN_(EXTENSIBLE_UI, ExtUI::onSettingsStored(!eeprom_error));
+    TERN_(EXTENSIBLE_UI, ExtUI::onSettingsStored(success));
 
-    return !eeprom_error;
+    return success;
   }
 
   /**
    * M501 - Retrieve Configuration
    */
-  bool MarlinSettings::_load() {
-    if (!EEPROM_START(EEPROM_OFFSET)) return false;
+  EEPROM_Error MarlinSettings::_load() {
+    EEPROM_Error eeprom_error = ERR_EEPROM_NOERR;
+
+    if (!EEPROM_START(EEPROM_OFFSET)) return eeprom_error;
 
     char stored_ver[4];
     EEPROM_READ_ALWAYS(stored_ver);
 
-    // Version has to match or defaults are used
-    if (strncmp(version, stored_ver, 3) != 0) {
-      if (stored_ver[3] != '\0') {
-        stored_ver[0] = '?';
-        stored_ver[1] = '\0';
+    uint16_t stored_crc;
+
+    do { // A block to break out of on error
+
+      // Version has to match or defaults are used
+      if (strncmp(version, stored_ver, 3) != 0) {
+        if (stored_ver[3] != '\0') {
+          stored_ver[0] = '?';
+          stored_ver[1] = '\0';
+        }
+        DEBUG_ECHO_MSG("EEPROM version mismatch (EEPROM=", stored_ver, " Marlin=" EEPROM_VERSION ")");
+        eeprom_error = ERR_EEPROM_VERSION;
+        break;
       }
-      DEBUG_ECHO_MSG("EEPROM version mismatch (EEPROM=", stored_ver, " Marlin=" EEPROM_VERSION ")");
-      TERN_(DWIN_LCD_PROUI, LCD_MESSAGE(MSG_ERR_EEPROM_VERSION));
-      TERN_(HOST_PROMPT_SUPPORT, hostui.notify(GET_TEXT_F(MSG_ERR_EEPROM_VERSION)));
 
-      IF_DISABLED(EEPROM_AUTO_INIT, ui.eeprom_alert_version());
-      eeprom_error = true;
-    }
-    else {
-
-      // Optionally reset on the first boot after flashing
+      //
+      // Optionally reset on first boot after flashing
+      //
       #if ENABLED(EEPROM_INIT_NOW)
         uint32_t stored_hash;
         EEPROM_READ_ALWAYS(stored_hash);
-        if (stored_hash != build_hash) { EEPROM_FINISH(); return false; }
+        if (stored_hash != build_hash) {
+          eeprom_error = ERR_EEPROM_CORRUPT;
+          break;
+        }
       #endif
 
-      uint16_t stored_crc;
+      //
+      // Get the stored CRC to compare at the end
+      //
       EEPROM_READ_ALWAYS(stored_crc);
 
+      //
+      // A temporary float for safe storage
+      //
       float dummyf = 0;
-      working_crc = 0;  // Init to 0. Accumulated by EEPROM_READ
 
-      _FIELD_TEST(e_factors);
+      //
+      // Init to 0. Accumulated by EEPROM_READ
+      //
+      working_crc = 0;
 
+      //
+      // Validate the stored size against the current data structure size
+      //
+      uint16_t stored_size;
+      EEPROM_READ_ALWAYS(stored_size);
+      if ((eeprom_error = size_error(stored_size))) break;
+
+      //
+      // Extruder Parameter Count
       // Number of e_factors may change
+      //
+      _FIELD_TEST(e_factors);
       uint8_t e_factors;
       EEPROM_READ_ALWAYS(e_factors);
 
@@ -1825,28 +1861,31 @@ void MarlinSettings::postprocess() {
       EEPROM_READ(TERN(ENABLE_LEVELING_FADE_HEIGHT, new_z_fade_height, dummyf));
 
       //
-      // AUTOTEMP
-      //
-      #if ENABLED(AUTOTEMP)
-        EEPROM_READ(planner.autotemp.max);
-        EEPROM_READ(planner.autotemp.min);
-        EEPROM_READ(planner.autotemp.factor);
-      #endif
-
-      //
       // Mesh (Manual) Bed Leveling
       //
       {
         uint8_t mesh_num_x, mesh_num_y;
+        uint16_t mesh_check;
         EEPROM_READ(dummyf);
         EEPROM_READ_ALWAYS(mesh_num_x);
         EEPROM_READ_ALWAYS(mesh_num_y);
+
+        // Check value must correspond to the X/Y values
+        EEPROM_READ_ALWAYS(mesh_check);
+        if (mesh_check != TWO_BYTE_HASH(mesh_num_x, mesh_num_y)) {
+          eeprom_error = ERR_EEPROM_CORRUPT;
+          break;
+        }
 
         #if ENABLED(MESH_BED_LEVELING)
           if (!validating) bedlevel.z_offset = dummyf;
           if (mesh_num_x == (GRID_MAX_POINTS_X) && mesh_num_y == (GRID_MAX_POINTS_Y)) {
             // EEPROM data fits the current mesh
             EEPROM_READ(bedlevel.z_values);
+          }
+          else if (mesh_num_x > (GRID_MAX_POINTS_X) || mesh_num_y > (GRID_MAX_POINTS_Y)) {
+            eeprom_error = ERR_EEPROM_CORRUPT;
+            break;
           }
           else {
             // EEPROM data is stale
@@ -1890,6 +1929,15 @@ void MarlinSettings::postprocess() {
         uint8_t grid_max_x, grid_max_y;
         EEPROM_READ_ALWAYS(grid_max_x);                // 1 byte
         EEPROM_READ_ALWAYS(grid_max_y);                // 1 byte
+
+        // Check value must correspond to the X/Y values
+        uint16_t grid_check;
+        EEPROM_READ_ALWAYS(grid_check);
+        if (grid_check != TWO_BYTE_HASH(grid_max_x, grid_max_y)) {
+          eeprom_error = ERR_EEPROM_CORRUPT;
+          break;
+        }
+
         xy_pos_t spacing, start;
         EEPROM_READ(spacing);                          // 2 ints
         EEPROM_READ(start);                            // 2 ints
@@ -1898,6 +1946,10 @@ void MarlinSettings::postprocess() {
             if (!validating) set_bed_leveling_enabled(false);
             bedlevel.set_grid(spacing, start);
             EEPROM_READ(bedlevel.z_values);                 // 9 to 256 floats
+          }
+          else if (grid_max_x > (GRID_MAX_POINTS_X) || grid_max_y > (GRID_MAX_POINTS_Y)) {
+            eeprom_error = ERR_EEPROM_CORRUPT;
+            break;
           }
           else // EEPROM data is stale
         #endif // AUTO_BED_LEVELING_BILINEAR
@@ -2453,7 +2505,6 @@ void MarlinSettings::postprocess() {
       //
       // Skew correction factors
       //
-      #if ENABLED(SKEW_CORRECTION)
       {
         skew_factor_t skew_factor;
         _FIELD_TEST(planner_skew_factor);
@@ -2468,7 +2519,6 @@ void MarlinSettings::postprocess() {
           }
         #endif
       }
-      #endif
 
       //
       // Advanced Pause filament load & unload lengths
@@ -2601,7 +2651,7 @@ void MarlinSettings::postprocess() {
       //
       // MKS UI controller
       //
-      #if DGUS_LCD_UI_MKS
+      #if ENABLED(DGUS_LCD_UI_MKS)
         _FIELD_TEST(mks_language_index);
         EEPROM_READ(mks_language_index);
         EEPROM_READ(mks_corner_offsets);
@@ -2626,7 +2676,8 @@ void MarlinSettings::postprocess() {
       //
       #if ENABLED(MPCTEMP)
       {
-        HOTEND_LOOP() EEPROM_READ(thermalManager.temp_hotend[e].mpc);
+        HOTEND_LOOP()
+          EEPROM_READ(thermalManager.temp_hotend[e].constants);
       }
       #endif
 
@@ -2654,26 +2705,21 @@ void MarlinSettings::postprocess() {
       //
       // Validate Final Size and CRC
       //
-      eeprom_error = size_error(eeprom_index - (EEPROM_OFFSET));
-      if (eeprom_error) {
-        DEBUG_ECHO_MSG("Index: ", eeprom_index - (EEPROM_OFFSET), " Size: ", datasize());
-        IF_DISABLED(EEPROM_AUTO_INIT, ui.eeprom_alert_index());
+      const uint16_t eeprom_total = eeprom_index - (EEPROM_OFFSET);
+      if ((eeprom_error = size_error(eeprom_total))) {
+        // Handle below and on return
+        break;
       }
       else if (working_crc != stored_crc) {
-        eeprom_error = true;
-        DEBUG_ERROR_MSG("EEPROM CRC mismatch - (stored) ", stored_crc, " != ", working_crc, " (calculated)!");
-        TERN_(DWIN_LCD_PROUI, LCD_MESSAGE(MSG_ERR_EEPROM_CRC));
-        TERN_(HOST_EEPROM_CHITCHAT, hostui.notify(GET_TEXT_F(MSG_ERR_EEPROM_CRC)));
-        IF_DISABLED(EEPROM_AUTO_INIT, ui.eeprom_alert_crc());
+        eeprom_error = ERR_EEPROM_CRC;
+        break;
       }
       else if (!validating) {
         DEBUG_ECHO_START();
         DEBUG_ECHO(version);
-        DEBUG_ECHOLNPGM(" stored settings retrieved (", eeprom_index - (EEPROM_OFFSET), " bytes; crc ", (uint32_t)working_crc, ")");
+        DEBUG_ECHOLNPGM(" stored settings retrieved (", eeprom_total, " bytes; crc ", working_crc, ")");
         TERN_(HOST_EEPROM_CHITCHAT, hostui.notify(F("Stored settings retrieved")));
       }
-
-      if (!validating && !eeprom_error) postprocess();
 
       #if ENABLED(AUTO_BED_LEVELING_UBL)
         if (!validating) {
@@ -2686,7 +2732,7 @@ void MarlinSettings::postprocess() {
             #endif
           }
           else {
-            eeprom_error = true;
+            eeprom_error = ERR_EEPROM_CORRUPT;
             #if BOTH(EEPROM_CHITCHAT, DEBUG_LEVELING_FEATURE)
               DEBUG_ECHOPGM("?Can't enable ");
               bedlevel.echo_name();
@@ -2705,6 +2751,26 @@ void MarlinSettings::postprocess() {
           }
         }
       #endif
+
+    } while(0);
+
+    EEPROM_FINISH();
+
+    switch (eeprom_error) {
+      case ERR_EEPROM_NOERR:
+        if (!validating) postprocess();
+        break;
+      case ERR_EEPROM_SIZE:
+        DEBUG_ECHO_MSG("Index: ", eeprom_index - (EEPROM_OFFSET), " Size: ", datasize());
+        break;
+      case ERR_EEPROM_CORRUPT:
+        DEBUG_ERROR_MSG(STR_ERR_EEPROM_CORRUPT);
+        break;
+      case ERR_EEPROM_CRC:
+        DEBUG_ERROR_MSG("EEPROM CRC mismatch - (stored) ", stored_crc, " != ", working_crc, " (calculated)!");
+        TERN_(HOST_EEPROM_CHITCHAT, hostui.notify(GET_TEXT_F(MSG_ERR_EEPROM_CRC)));
+        break;
+      default: break;
     }
 
     #if ENABLED(EEPROM_CHITCHAT) && DISABLED(DISABLE_M503)
@@ -2712,9 +2778,7 @@ void MarlinSettings::postprocess() {
       if (!validating && TERN1(EEPROM_BOOT_SILENT, IsRunning())) report();
     #endif
 
-    EEPROM_FINISH();
-
-    return !eeprom_error;
+    return eeprom_error;
   }
 
   #ifdef ARCHIM2_SPI_FLASH_EEPROM_BACKUP_SIZE
@@ -2724,21 +2788,25 @@ void MarlinSettings::postprocess() {
   bool MarlinSettings::validate() {
     validating = true;
     #ifdef ARCHIM2_SPI_FLASH_EEPROM_BACKUP_SIZE
-      bool success = _load();
-      if (!success && restoreEEPROM()) {
+      EEPROM_Error err = _load();
+      if (err != ERR_EEPROM_NOERR && restoreEEPROM()) {
         SERIAL_ECHOLNPGM("Recovered backup EEPROM settings from SPI Flash");
-        success = _load();
+        err = _load();
       }
     #else
-      const bool success = _load();
+      const EEPROM_Error err = _load();
     #endif
     validating = false;
-    return success;
+
+    if (err) ui.eeprom_alert(err);
+
+    return (err == ERR_EEPROM_NOERR);
   }
 
   bool MarlinSettings::load() {
     if (validate()) {
-      const bool success = _load();
+      const EEPROM_Error err = _load();
+      const bool success = (err == ERR_EEPROM_NOERR);
       TERN_(EXTENSIBLE_UI, ExtUI::onSettingsLoaded(success));
       return success;
     }
@@ -3029,15 +3097,6 @@ void MarlinSettings::reset() {
   //
   TERN_(ENABLE_LEVELING_FADE_HEIGHT, new_z_fade_height = (DEFAULT_LEVELING_FADE_HEIGHT));
   TERN_(HAS_LEVELING, reset_bed_level());
-
-  //
-  // AUTOTEMP
-  //
-  #if ENABLED(AUTOTEMP)
-    planner.autotemp.max = AUTOTEMP_MAX;
-    planner.autotemp.min = AUTOTEMP_MIN;
-    planner.autotemp.factor = AUTOTEMP_FACTOR;
-  #endif
 
   //
   // X Axis Twist Compensation
@@ -3414,15 +3473,15 @@ void MarlinSettings::reset() {
     static_assert(COUNT(_filament_heat_capacity_permm) == HOTENDS, "FILAMENT_HEAT_CAPACITY_PERMM must have HOTENDS items.");
 
     HOTEND_LOOP() {
-      MPC_t &mpc = thermalManager.temp_hotend[e].mpc;
-      mpc.heater_power = _mpc_heater_power[e];
-      mpc.block_heat_capacity = _mpc_block_heat_capacity[e];
-      mpc.sensor_responsiveness = _mpc_sensor_responsiveness[e];
-      mpc.ambient_xfer_coeff_fan0 = _mpc_ambient_xfer_coeff[e];
+      MPC_t &constants = thermalManager.temp_hotend[e].constants;
+      constants.heater_power = _mpc_heater_power[e];
+      constants.block_heat_capacity = _mpc_block_heat_capacity[e];
+      constants.sensor_responsiveness = _mpc_sensor_responsiveness[e];
+      constants.ambient_xfer_coeff_fan0 = _mpc_ambient_xfer_coeff[e];
       #if ENABLED(MPC_INCLUDE_FAN)
-        mpc.fan255_adjustment = _mpc_ambient_xfer_coeff_fan255[e] - _mpc_ambient_xfer_coeff[e];
+        constants.fan255_adjustment = _mpc_ambient_xfer_coeff_fan255[e] - _mpc_ambient_xfer_coeff[e];
       #endif
-      mpc.filament_heat_capacity_permm = _filament_heat_capacity_permm[e];
+      constants.filament_heat_capacity_permm = _filament_heat_capacity_permm[e];
     }
   #endif
 

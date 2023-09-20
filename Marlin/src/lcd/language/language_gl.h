@@ -234,7 +234,7 @@ namespace Language_gl {
   LSTR MSG_MOVE_50MM                      = _UxGT("Mover 50mm");
   LSTR MSG_MOVE_100MM                     = _UxGT("Mover 100mm");
   LSTR MSG_SPEED                          = _UxGT("Velocidade");
-  LSTR MSG_MESH_Z_OFFSET                  = _UxGT("Cama Z");
+  LSTR MSG_BED_Z                          = _UxGT("Cama Z");
   LSTR MSG_NOZZLE                         = _UxGT("Bico");
   LSTR MSG_NOZZLE_N                       = _UxGT("Bico ~");
   LSTR MSG_NOZZLE_PARKED                  = _UxGT("Bico Estacionado");
@@ -263,7 +263,7 @@ namespace Language_gl {
   LSTR MSG_PID_AUTOTUNE                   = _UxGT("Auto-Sint. PID");
   LSTR MSG_PID_AUTOTUNE_E                 = _UxGT("Auto-Sint. PID *");
   LSTR MSG_PID_AUTOTUNE_DONE              = _UxGT("Fin Auto-Sint PID");
-  LSTR MSG_PID_BAD_HEATER_ID              = _UxGT("Auto-Sint. fallida! Extrusor danado.");
+  LSTR MSG_PID_BAD_EXTRUDER_NUM           = _UxGT("Auto-Sint. fallida! Extrusor danado.");
   LSTR MSG_PID_TEMP_TOO_HIGH              = _UxGT("Auto-Sint. fallida! Temperatura moi alta.");
   LSTR MSG_PID_TIMEOUT                    = _UxGT("Auto-Sint. fallida! Tempo excedido.");
   LSTR MSG_SELECT_E                       = _UxGT("Escolla *");
@@ -317,7 +317,7 @@ namespace Language_gl {
   LSTR MSG_RESTORE_DEFAULTS               = _UxGT("Rest. Defecto");
   LSTR MSG_INIT_EEPROM                    = _UxGT("Inicializar EEPROM");
   LSTR MSG_ERR_EEPROM_CRC                 = _UxGT("Erro: CRC EEPROM");
-  LSTR MSG_ERR_EEPROM_INDEX               = _UxGT("Erro: Índice EEPROM");
+  LSTR MSG_ERR_EEPROM_SIZE                = _UxGT("Erro: Tamaño EEPROM");
   LSTR MSG_ERR_EEPROM_VERSION             = _UxGT("Erro: Versión EEPROM");
   LSTR MSG_SETTINGS_STORED                = _UxGT("Config Gardada");
   LSTR MSG_MEDIA_UPDATE                   = _UxGT("Actualizar SD/FD");

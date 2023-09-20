@@ -127,7 +127,7 @@ constexpr uint8_t epps = ENCODER_PULSES_PER_STEP;
 #endif
 
 #if ENABLED(PCA9632_BUZZER)
-  void MarlinUI::buzz(const long duration, const uint16_t freq) {
+  void MarlinUI::buzz(const long duration, const uint16_t freq/*=0*/) {
     if (sound_on) PCA9632_buzz(duration, freq);
   }
 #endif
@@ -174,7 +174,7 @@ constexpr uint8_t epps = ENCODER_PULSES_PER_STEP;
 #endif
 
 #if HAS_U8GLIB_I2C_OLED && PINS_EXIST(I2C_SCL, I2C_SDA) && DISABLED(SOFT_I2C_EEPROM)
-  #include "Wire.h"
+  #include <Wire.h>
 #endif
 
 // Encoder Handling
@@ -346,7 +346,6 @@ void MarlinUI::init() {
 
   #if IS_DWIN_MARLINUI
     bool MarlinUI::did_first_redraw;
-    bool MarlinUI::old_is_printing;
   #endif
 
   #if ENABLED(SDSUPPORT)
@@ -667,7 +666,7 @@ void MarlinUI::init() {
     #if HAS_MARLINUI_MENU
       if (use_click()) {
         #if BOTH(FILAMENT_LCD_DISPLAY, SDSUPPORT)
-          next_filament_display = millis() + 5000UL;  // Show status message for 5s
+          pause_filament_display();
         #endif
         goto_screen(menu_main);
         reinit_lcd(); // Revive a noisy shared SPI LCD
@@ -1414,6 +1413,13 @@ void MarlinUI::init() {
 
   #endif // HAS_ENCODER_ACTION
 
+  #if HAS_SOUND
+    void MarlinUI::completion_feedback(const bool good/*=true*/) {
+      TERN_(HAS_TOUCH_SLEEP, wakeup_screen()); // Wake up on rotary encoder click...
+      if (good) OKAY_BUZZ(); else ERR_BUZZ();
+    }
+  #endif
+
 #endif // HAS_WIRED_LCD
 
 #if HAS_STATUS_MESSAGE
@@ -1582,7 +1588,7 @@ void MarlinUI::init() {
       #endif
 
       #if BOTH(FILAMENT_LCD_DISPLAY, SDSUPPORT)
-        next_filament_display = ms + 5000UL; // Show status message for 5s
+        pause_filament_display(ms); // Show status message for 5s
       #endif
 
     #endif
@@ -1743,11 +1749,9 @@ void MarlinUI::init() {
     );
   }
 
-  #if LCD_WITH_BLINK && HAS_EXTRA_PROGRESS
-
-    // Renew and redraw all enabled progress strings
-    void MarlinUI::rotate_progress() {
-      typedef void (*PrintProgress_t)();
+  #if LCD_WITH_BLINK && DISABLED(HAS_GRAPHICAL_TFT)
+    typedef void (*PrintProgress_t)();
+    void MarlinUI::rotate_progress() { // Renew and redraw all enabled progress strings
       const PrintProgress_t progFunc[] = {
         OPTITEM(SHOW_PROGRESS_PERCENT, drawPercent)
         OPTITEM(SHOW_ELAPSED_TIME, drawElapsed)
@@ -1762,8 +1766,7 @@ void MarlinUI::init() {
         (*progFunc[i])();
       }
     }
-
-  #endif // LCD_WITH_BLINK && HAS_EXTRA_PROGRESS
+  #endif
 
 #endif // HAS_PRINT_PROGRESS
 
@@ -1831,7 +1834,7 @@ void MarlinUI::init() {
     #endif
   }
 
-  #if EITHER(BABYSTEP_GFX_OVERLAY, MESH_EDIT_GFX_OVERLAY)
+  #if EITHER(BABYSTEP_ZPROBE_GFX_OVERLAY, MESH_EDIT_GFX_OVERLAY)
     void MarlinUI::zoffset_overlay(const_float_t zvalue) {
       // Determine whether the user is raising or lowering the nozzle.
       static int8_t dir;
@@ -1896,18 +1899,22 @@ void MarlinUI::init() {
 
   #if DISABLED(EEPROM_AUTO_INIT)
 
-    static inline FSTR_P eeprom_err(const uint8_t msgid) {
-      switch (msgid) {
-        default:
-        case 0: return GET_TEXT_F(MSG_ERR_EEPROM_CRC);
-        case 1: return GET_TEXT_F(MSG_ERR_EEPROM_INDEX);
-        case 2: return GET_TEXT_F(MSG_ERR_EEPROM_VERSION);
+    static inline FSTR_P eeprom_err(const EEPROM_Error err) {
+      switch (err) {
+        case ERR_EEPROM_VERSION:  return GET_TEXT_F(MSG_ERR_EEPROM_VERSION);
+        case ERR_EEPROM_SIZE:     return GET_TEXT_F(MSG_ERR_EEPROM_SIZE);
+        case ERR_EEPROM_CRC:      return GET_TEXT_F(MSG_ERR_EEPROM_CRC);
+        case ERR_EEPROM_CORRUPT:  return GET_TEXT_F(MSG_ERR_EEPROM_CORRUPT);
+        default: return nullptr;
       }
     }
 
-    void MarlinUI::eeprom_alert(const uint8_t msgid) {
+    void MarlinUI::eeprom_alert(const EEPROM_Error err) {
+      FSTR_P const err_msg = eeprom_err(err);
+      set_status(err_msg);
+      TERN_(HOST_PROMPT_SUPPORT, hostui.notify(err_msg));
       #if HAS_MARLINUI_MENU
-        editable.uint8 = msgid;
+        editable.uint8 = err;
         goto_screen([]{
           FSTR_P const restore_msg = GET_TEXT_F(MSG_INIT_EEPROM);
           char msg[utf8_strlen(restore_msg) + 1];
@@ -1915,11 +1922,9 @@ void MarlinUI::init() {
           MenuItem_confirm::select_screen(
             GET_TEXT_F(MSG_BUTTON_RESET), GET_TEXT_F(MSG_BUTTON_IGNORE),
             init_eeprom, return_to_status,
-            eeprom_err(editable.uint8), msg, F("?")
+            eeprom_err((EEPROM_Error)editable.uint8), msg, F("?")
           );
         });
-      #else
-        set_status(eeprom_err(msgid));
       #endif
     }
 

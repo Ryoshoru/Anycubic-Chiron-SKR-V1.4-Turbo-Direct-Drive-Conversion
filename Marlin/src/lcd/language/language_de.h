@@ -308,7 +308,7 @@ namespace Language_de {
   LSTR MSG_MOVE_01IN                      = _UxGT("0.100 in");
   LSTR MSG_MOVE_1IN                       = _UxGT("1.000 in");
   LSTR MSG_SPEED                          = _UxGT("Geschw.");
-  LSTR MSG_MESH_Z_OFFSET                  = _UxGT("Bett Z");
+  LSTR MSG_BED_Z                          = _UxGT("Bett Z");
   LSTR MSG_NOZZLE                         = _UxGT("Düse");
   LSTR MSG_NOZZLE_N                       = _UxGT("Düse ~");
   LSTR MSG_NOZZLE_PARKED                  = _UxGT("Düse geparkt");
@@ -343,10 +343,10 @@ namespace Language_de {
   LSTR MSG_PID_CYCLE                      = _UxGT("PID Zyklus");
   LSTR MSG_PID_AUTOTUNE_DONE              = _UxGT("PID Tuning fertig");
   LSTR MSG_PID_AUTOTUNE_FAILED            = _UxGT("PID Autotune fehlge.!");
-  LSTR MSG_BAD_HEATER_ID                  = _UxGT("ungültiger Extruder.");
+  LSTR MSG_BAD_EXTRUDER_NUM               = _UxGT("ungültiger Extruder.");
   LSTR MSG_TEMP_TOO_HIGH                  = _UxGT("Temperatur zu hoch.");
   LSTR MSG_TIMEOUT                        = _UxGT("Timeout.");
-  LSTR MSG_PID_BAD_HEATER_ID              = _UxGT("Autotune fehlge.! Ungültiger Extruder");
+  LSTR MSG_PID_BAD_EXTRUDER_NUM           = _UxGT("Autotune fehlge.! Ungültiger Extruder");
   LSTR MSG_PID_TEMP_TOO_HIGH              = _UxGT("Autotune fehlge.! Temperatur zu hoch.");
   LSTR MSG_PID_TIMEOUT                    = _UxGT("Autotune fehlge.! Timeout.");
   LSTR MSG_MPC_MEASURING_AMBIENT          = _UxGT("teste Wärmeverlust");
@@ -414,7 +414,7 @@ namespace Language_de {
   LSTR MSG_RESTORE_DEFAULTS               = _UxGT("Standardwerte laden");
   LSTR MSG_INIT_EEPROM                    = _UxGT("Werkseinstellungen");
   LSTR MSG_ERR_EEPROM_CRC                 = _UxGT("EEPROM CRC Fehler");
-  LSTR MSG_ERR_EEPROM_INDEX               = _UxGT("EEPROM Index Fehler");
+  LSTR MSG_ERR_EEPROM_SIZE                = _UxGT("EEPROM Größe Fehler");
   LSTR MSG_ERR_EEPROM_VERSION             = _UxGT("EEPROM Version Fehler");
   LSTR MSG_SETTINGS_STORED                = _UxGT("Einstell. gespei.");
   LSTR MSG_MEDIA_UPDATE                   = _UxGT("FW Update vom Medium");

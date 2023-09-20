@@ -272,7 +272,7 @@ namespace Language_hu {
   LSTR MSG_MOVE_05IN                      = _UxGT("Mozgás 12.7mm");
   LSTR MSG_MOVE_1IN                       = _UxGT("Mozgáá 25.4mm");
   LSTR MSG_SPEED                          = _UxGT("Sebesség");
-  LSTR MSG_MESH_Z_OFFSET                  = _UxGT("Z ágy");
+  LSTR MSG_BED_Z                          = _UxGT("Z ágy");
   LSTR MSG_NOZZLE                         = _UxGT("Fej");
   LSTR MSG_NOZZLE_N                       = _UxGT("Fej ~");
   LSTR MSG_NOZZLE_PARKED                  = _UxGT("Fej parkolva");
@@ -306,7 +306,7 @@ namespace Language_hu {
   LSTR MSG_PID_AUTOTUNE_E                 = _UxGT("PID hangolás *");
   LSTR MSG_PID_CYCLE                      = _UxGT("PID ciklus");
   LSTR MSG_PID_AUTOTUNE_DONE              = _UxGT("PID hangolás kész");
-  LSTR MSG_PID_BAD_HEATER_ID              = _UxGT("Hangolási hiba! Rossz adagoló.");
+  LSTR MSG_PID_BAD_EXTRUDER_NUM           = _UxGT("Hangolási hiba! Rossz adagoló.");
   LSTR MSG_PID_TEMP_TOO_HIGH              = _UxGT("Hangolási hiba! Magas hömérséklet.");
   LSTR MSG_PID_TIMEOUT                    = _UxGT("Hangolási hiba! Idötúllépés.");
   LSTR MSG_SELECT_E                       = _UxGT("Kiválaszt *");
@@ -363,7 +363,7 @@ namespace Language_hu {
   LSTR MSG_RESTORE_DEFAULTS               = _UxGT("Alapértelmezett");
   LSTR MSG_INIT_EEPROM                    = _UxGT("EEPROM inicializálás");
   LSTR MSG_ERR_EEPROM_CRC                 = _UxGT("Hiba: EEPROM CRC");
-  LSTR MSG_ERR_EEPROM_INDEX               = _UxGT("Hiba: EEPROM index");
+  LSTR MSG_ERR_EEPROM_SIZE                = _UxGT("Hiba: EEPROM mérete");
   LSTR MSG_ERR_EEPROM_VERSION             = _UxGT("Hiba: EEPROM verzió");
   LSTR MSG_SETTINGS_STORED                = _UxGT("Beállítások mentve");
   LSTR MSG_MEDIA_UPDATE                   = _UxGT("Tároló frissítés");
@@ -490,9 +490,6 @@ namespace Language_hu {
   LSTR MSG_ERR_MINTEMP                    = _UxGT("Hiba: MIN höfok");
   LSTR MSG_HALTED                         = _UxGT("A NYOMTATÓ LEÁLLT");
   LSTR MSG_PLEASE_RESET                   = _UxGT("Indítsd újra!");
-  LSTR MSG_SHORT_DAY                      = _UxGT("n"); // Csak egy karakter
-  LSTR MSG_SHORT_HOUR                     = _UxGT("ó"); // Csak egy karakter
-  LSTR MSG_SHORT_MINUTE                   = _UxGT("p"); // Csak egy karakter
   LSTR MSG_HEATING                        = _UxGT("Fütés...");
   LSTR MSG_COOLING                        = _UxGT("Hütés...");
   LSTR MSG_BED_HEATING                    = _UxGT("Ágy fütés...");
@@ -696,12 +693,8 @@ namespace Language_hu {
 
   LSTR MSG_SD_CARD                        = _UxGT("SD Kártya");
   LSTR MSG_USB_DISK                       = _UxGT("USB Lemez");
-}
 
-#if FAN_COUNT == 1
-  #define MSG_FIRST_FAN_SPEED       MSG_FAN_SPEED
-  #define MSG_EXTRA_FIRST_FAN_SPEED MSG_EXTRA_FAN_SPEED
-#else
-  #define MSG_FIRST_FAN_SPEED       MSG_FAN_SPEED_N
-  #define MSG_EXTRA_FIRST_FAN_SPEED MSG_EXTRA_FAN_SPEED_N
-#endif
+  LSTR MSG_SHORT_DAY                      = _UxGT("n"); // Csak egy karakter
+  LSTR MSG_SHORT_HOUR                     = _UxGT("ó"); // Csak egy karakter
+  LSTR MSG_SHORT_MINUTE                   = _UxGT("p"); // Csak egy karakter
+}

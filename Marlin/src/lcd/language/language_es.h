@@ -237,7 +237,7 @@ namespace Language_es {
   LSTR MSG_MOVE_50MM                      = _UxGT("Mover 50mm");
   LSTR MSG_MOVE_100MM                     = _UxGT("Mover 100mm");
   LSTR MSG_SPEED                          = _UxGT("Velocidad");
-  LSTR MSG_MESH_Z_OFFSET                  = _UxGT("Cama Z");
+  LSTR MSG_BED_Z                          = _UxGT("Cama Z");
   LSTR MSG_NOZZLE                         = _UxGT("Boquilla");
   LSTR MSG_NOZZLE_N                       = _UxGT("Boquilla ~");
   LSTR MSG_NOZZLE_PARKED                  = _UxGT("Boquilla Aparcada");
@@ -315,7 +315,7 @@ namespace Language_es {
   LSTR MSG_RESTORE_DEFAULTS               = _UxGT("Rest. fábrica");
   LSTR MSG_INIT_EEPROM                    = _UxGT("Inicializar EEPROM");
   LSTR MSG_ERR_EEPROM_CRC                 = _UxGT("Err: EEPROM CRC");
-  LSTR MSG_ERR_EEPROM_INDEX               = _UxGT("Err: Índice EEPROM");
+  LSTR MSG_ERR_EEPROM_SIZE                = _UxGT("Err: EEPROM Tamaño");
   LSTR MSG_ERR_EEPROM_VERSION             = _UxGT("Err: Versión EEPROM");
   LSTR MSG_MEDIA_UPDATE                   = _UxGT("Actualizar SD/FD");
   LSTR MSG_RESET_PRINTER                  = _UxGT("Resetear Impresora");
