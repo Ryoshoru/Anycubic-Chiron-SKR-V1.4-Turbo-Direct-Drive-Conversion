@@ -665,9 +665,9 @@
     #define DEFAULT_Ki_LIST {   1.08,   1.08 }
     #define DEFAULT_Kd_LIST { 114.00, 114.00 }
   #else
-    #define DEFAULT_Kp  48.1343
-    #define DEFAULT_Ki   5.8572
-    #define DEFAULT_Kd 98.8920
+    #define DEFAULT_Kp  45.6801
+    #define DEFAULT_Ki   4.4716
+    #define DEFAULT_Kd 116.6612
   #endif
 #endif
 
@@ -750,9 +750,9 @@
 
   // 120V 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
   // from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
-  #define DEFAULT_bedKp 60.1230
-  #define DEFAULT_bedKi 11.1639
-  #define DEFAULT_bedKd 215.8617
+  #define DEFAULT_bedKp 57.6997
+  #define DEFAULT_bedKi 10.7538
+  #define DEFAULT_bedKd 206.3917
 
   // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
 #endif // PIDTEMPBED
@@ -1168,7 +1168,7 @@
  */
 #define DEFAULT_AXIS_STEPS_PER_UNIT \
   {                                 \
-    80, 100, 400, 411.7064       \
+    80, 100, 400, 415       \
   }
 
 /**
@@ -1772,7 +1772,7 @@
  * RAMPS-based boards use SERVO3_PIN for the first runout sensor.
  * For other boards you may need to define FIL_RUNOUT_PIN, FIL_RUNOUT2_PIN, etc.
  */
-//#define FILAMENT_RUNOUT_SENSOR
+#define FILAMENT_RUNOUT_SENSOR
 #if ENABLED(FILAMENT_RUNOUT_SENSOR)
   #define FIL_RUNOUT_ENABLED_DEFAULT true // Enable the sensor on startup. Override with M412 followed by M500.
   #define NUM_RUNOUT_SENSORS   1          // Number of sensors, up to one per extruder. Define a FIL_RUNOUT#_PIN for each.
